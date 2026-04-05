@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrossFit WOD Library</title>
+<style>
+:root{--bg:#0d0d0d;--bg2:#141414;--bg3:#1c1c1c;--card:#1a1a1a;--card-h:#212121;--border:#2a2a2a;--border2:#333;--text:#e8e8e8;--text2:#888;--text3:#555;--orange:#ff5722;--orange2:#e64a19;--gold:#ffb300}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+/* ── HEADER ── */
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;position:sticky;top:0;z-index:100}
+.header-row1{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+h1{font-size:22px;font-weight:700;color:var(--orange);letter-spacing:-.5px}
+.header-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.hbtns{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.btn-p{background:var(--orange);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn-p:hover{background:var(--orange2)}
+.btn-s{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-s:hover{color:var(--text);border-color:var(--text2)}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+.controls input,.controls select{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:7px 11px;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+.controls input{flex:1;min-width:180px}
+.controls select{min-width:130px;cursor:pointer}
+.controls input:focus,.controls select:focus{border-color:var(--orange)}
+.controls input::placeholder{color:var(--text3)}
+
+/* ── TODAY'S WOD BANNER ── */
+.today-wod{background:linear-gradient(135deg,#1a0a00,#2a1200);border:1px solid #5a2800;border-radius:10px;margin:16px 24px;padding:16px 20px;position:relative;overflow:hidden}
+.today-wod::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--gold))}
+.today-label{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.today-dot{width:7px;height:7px;background:var(--orange);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.today-date{font-size:11px;color:var(--text2);margin-left:auto}
+.today-title{font-size:18px;font-weight:700;color:var(--orange);margin-bottom:6px}
+.today-desc{font-size:13px;color:var(--text2);white-space:pre-line;line-height:1.7}
+.today-meta{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.today-tag{font-size:11px;color:var(--text3);background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:20px;padding:2px 10px}
+.today-src{font-size:11px;color:var(--text3);margin-top:6px}
+.today-loading{color:var(--text3);font-size:13px;font-style:italic}
+.today-error{color:#ff6b6b;font-size:13px}
+
+/* ── STATS ── */
+.stats{display:flex;gap:10px;padding:0 24px 14px;flex-wrap:wrap}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:76px;text-align:center;flex-shrink:0}
+.stat-n{font-size:20px;font-weight:700;color:var(--orange)}
+.stat-l{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+
+/* ── MAIN ── */
+main{padding:0 24px 60px;max-width:1400px;margin:0 auto}
+.section-header{display:flex;align-items:center;gap:10px;margin:24px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.section-header:first-child{margin-top:0}
+.section-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em}
+.section-count{font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:1px 8px}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.card:hover{background:var(--card-h);border-color:var(--border2)}
+.card.done{opacity:.45}
+.card.done .card-name::after{content:' ✓';color:#7ac97a;font-size:12px}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.card-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.3}
+.badges{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap;border:1px solid transparent}
+.b-girls{background:#2c1515;color:#ff7070;border-color:#5c2020}
+.b-hero{background:#0d1e2c;color:#5ab4f5;border-color:#1a4060}
+.b-open{background:#1a0d2c;color:#b07fff;border-color:#3a1f60}
+.b-jb{background:#1c1300;color:#ffb300;border-color:#4a3200}
+.b-noah{background:#0d1f0d;color:#7ac97a;border-color:#1f4a1f}
+.b-amrap{background:#0d2218;color:#4dd4a0}
+.b-fortime{background:#2c1212;color:#ff6b6b}
+.b-emom{background:#1c1400;color:#ffcc44}
+.b-strength{background:#141428;color:#8888ff}
+.b-other{background:#1c1c1c;color:#888}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-line;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.card-desc.open{max-height:600px;margin-bottom:10px}
+.card-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);gap:4px;flex-wrap:wrap}
+.meta-rx{color:var(--gold);font-weight:600}
+.card-actions{display:flex;gap:6px;margin-top:8px}
+.btn-sm{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-weight:500}
+.btn-sm:hover{color:var(--text);border-color:var(--text2)}
+.btn-done:hover{color:#7ac97a;border-color:#1f4a1f}
+.btn-done.active{background:#0d1f0d;color:#7ac97a;border-color:#1f4a1f}
+.note-preview{font-size:11px;color:var(--gold);margin-top:4px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;padding:60px 20px;color:var(--text2);font-size:15px}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:24px;max-width:560px;width:100%;position:relative;max-height:85vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}
+.modal-close:hover{color:var(--text)}
+.modal-src{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.modal-name{font-size:22px;font-weight:700;color:var(--orange);margin-bottom:12px}
+.modal-badges{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.modal-desc{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-line;background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:14px}
+.modal-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);gap:8px}
+.modal-row:last-of-type{border-bottom:none}
+.modal-key{color:var(--text2)}
+.modal-val{color:var(--text);font-weight:600;text-align:right}
+.modal-val.gold{color:var(--gold)}
+.note-section{margin-top:16px}
+.note-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.note-section textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:8px;min-height:70px;font-family:inherit;outline:none;resize:vertical}
+.note-section textarea:focus{border-color:var(--gold)}
+.note-section textarea::placeholder{color:var(--text3)}
+.note-btns{display:flex;gap:8px;margin-top:6px}
+.btn-note{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #4a3200;background:#1c1300;color:#ffb300;cursor:pointer;font-weight:500}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:600px){header,.stats,main{padding-left:14px;padding-right:14px}.today-wod{margin:12px 14px}.grid{grid-template-columns:1fr}h1{font-size:18px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row1">
+    <div>
+      <h1>CrossFit WOD Library</h1>
+      <div class="header-sub" id="subline">200+ workouts — loading...</div>
+    </div>
+    <div class="hbtns">
+      <button class="btn-p" onclick="randomWOD()">🎲 Random WOD</button>
+      <button class="btn-s" onclick="clearFilters()">Clear filters</button>
+    </div>
+  </div>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search workouts, movements, weights..." oninput="render()">
+    <select id="src" onchange="render()">
+      <option value="">All sources</option>
+      <option value="girls">Benchmark Girls</option>
+      <option value="hero">Hero WODs</option>
+      <option value="open">CrossFit Open</option>
+      <option value="jb">Josh Bridges</option>
+      <option value="noah">Road to the Games</option>
+    </select>
+    <select id="yr" onchange="render()">
+      <option value="">All years</option>
+      <option value="2015">2015 Open</option>
+      <option value="2016">2016 Open</option>
+      <option value="2017">2017 Open</option>
+      <option value="2018">2018 Open</option>
+      <option value="2019">2019 Open</option>
+      <option value="2020">2020 Open</option>
+      <option value="2021">2021 Open</option>
+      <option value="2022">2022 Open</option>
+      <option value="2023">2023 Open</option>
+      <option value="2024">2024 Open</option>
+      <option value="2025">2025 Open</option>
+    </select>
+    <select id="type" onchange="render()">
+      <option value="">All types</option>
+      <option value="AMRAP">AMRAP</option>
+      <option value="For Time">For Time</option>
+      <option value="EMOM">EMOM</option>
+      <option value="For Load">For Load</option>
+      <option value="For Score">For Score</option>
+      <option value="Conditioning">Conditioning</option>
+      <option value="Strength">Strength</option>
+    </select>
+    <select id="timef" onchange="render()">
+      <option value="">Any duration</option>
+      <option value="short">Short (&lt;10 min)</option>
+      <option value="medium">Medium (10–20 min)</option>
+      <option value="long">Long (20+ min)</option>
+    </select>
+    <select id="donef" onchange="render()">
+      <option value="">All workouts</option>
+      <option value="todo">Not done yet</option>
+      <option value="done">Completed</option>
+      <option value="noted">Has notes</option>
+    </select>
+  </div>
+</header>
+
+<!-- TODAY'S WOD BANNER -->
+<div class="today-wod" id="today-wod-banner">
+  <div class="today-label">
+    <div class="today-dot"></div>
+    WOD of the Day
+    <span class="today-date" id="today-date"></span>
+  </div>
+  <div class="today-loading" id="today-loading">Loading today's WOD...</div>
+  <div id="today-content" style="display:none">
+    <div class="today-title" id="today-title"></div>
+    <div class="today-desc" id="today-desc"></div>
+    <div class="today-meta" id="today-meta"></div>
+    <div class="today-src" id="today-src"></div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="s-showing">0</div><div class="stat-l">Showing</div></div>
+  <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">Completed</div></div>
+  <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Total WODs</div></div>
+  <div class="stat"><div class="stat-n" id="s-girls">0</div><div class="stat-l">Girls</div></div>
+  <div class="stat"><div class="stat-n" id="s-hero">0</div><div class="stat-l">Hero</div></div>
+  <div class="stat"><div class="stat-n" id="s-open">0</div><div class="stat-l">Open</div></div>
+  <div class="stat"><div class="stat-n" id="s-jb">0</div><div class="stat-l">Josh Bridges</div></div>
+</div>
+
+<main id="main"></main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    <div class="modal-src" id="m-src"></div>
+    <div class="modal-name" id="m-name"></div>
+    <div class="modal-badges" id="m-badges"></div>
+    <div class="modal-desc" id="m-desc"></div>
+    <div id="m-rows"></div>
+    <div class="note-section">
+      <div class="note-label">Your notes / PR log</div>
+      <textarea id="m-note" placeholder="Log your time, weight, score, notes..."></textarea>
+      <div class="note-btns">
+        <button class="btn-note" id="m-done-btn" onclick="modalToggleDone()">Mark as done</button>
+        <button class="btn-note" onclick="modalSaveNote()">Save note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// ALL WORKOUTS DATA
+// ═══════════════════════════════════════════════════════════════
+const WODS=[
+// BENCHMARK GIRLS
+{id:1,src:"girls",name:"Fran",type:"For Time",time:"~5 min",rx:"95/65 lb",score:"Time",yr:"",desc:"21-15-9 reps for time:\n• Thrusters @ 95/65 lb\n• Pull-Ups"},
+{id:2,src:"girls",name:"Helen",type:"For Time",time:"~10 min",rx:"53/35 lb KB",score:"Time",yr:"",desc:"3 rounds for time:\n• 400m Run\n• 21 KB Swings @ 53/35 lb\n• 12 Pull-Ups"},
+{id:3,src:"girls",name:"Grace",type:"For Time",time:"~2 min",rx:"135/95 lb",score:"Time",yr:"",desc:"30 Clean & Jerks for time\nGoal: unbroken or minimal sets"},
+{id:4,src:"girls",name:"Isabel",type:"For Time",time:"~2 min",rx:"135/95 lb",score:"Time",yr:"",desc:"30 Snatches for time\nGoal: unbroken or minimal touch-and-go sets"},
+{id:5,src:"girls",name:"Karen",type:"For Time",time:"~8 min",rx:"20 lb to 10 ft / 14 lb to 9 ft",score:"Time",yr:"",desc:"150 Wall Ball Shots for time\nBreak as needed; minimize rest"},
+{id:6,src:"girls",name:"Diane",type:"For Time",time:"~5 min",rx:"225/155 lb",score:"Time",yr:"",desc:"21-15-9 reps for time:\n• Deadlift @ 225/155 lb\n• Handstand Push-Ups"},
+{id:7,src:"girls",name:"Elizabeth",type:"For Time",time:"~8 min",rx:"135/95 lb",score:"Time",yr:"",desc:"21-15-9 reps for time:\n• Squat Clean @ 135/95 lb\n• Ring Dips"},
+{id:8,src:"girls",name:"Jackie",type:"For Time",time:"~8 min",rx:"45/35 lb",score:"Time",yr:"",desc:"For time:\n• 1,000m Row\n• 50 Thrusters @ 45/35 lb\n• 30 Pull-Ups"},
+{id:9,src:"girls",name:"Nancy",type:"For Time",time:"~15 min",rx:"95/65 lb",score:"Time",yr:"",desc:"5 rounds for time:\n• 400m Run\n• 15 Overhead Squats @ 95/65 lb"},
+{id:10,src:"girls",name:"Cindy",type:"AMRAP",time:"20 min",rx:"Bodyweight",score:"Rounds + reps",yr:"",desc:"AMRAP in 20 min:\n• 5 Pull-Ups\n• 10 Push-Ups\n• 15 Air Squats"},
+{id:11,src:"girls",name:"Mary",type:"AMRAP",time:"20 min",rx:"Bodyweight",score:"Rounds + reps",yr:"",desc:"AMRAP in 20 min:\n• 5 Handstand Push-Ups\n• 10 Pistol Squats (alternating)\n• 15 Pull-Ups"},
+{id:12,src:"girls",name:"Chelsea",type:"EMOM",time:"30 min",rx:"Bodyweight",score:"Rounds completed",yr:"",desc:"EMOM for 30 min:\n• 5 Pull-Ups\n• 10 Push-Ups\n• 15 Air Squats\nGoal: complete all 30 rounds unbroken"},
+{id:13,src:"girls",name:"Annie",type:"For Time",time:"~10 min",rx:"Jump rope",score:"Time",yr:"",desc:"50-40-30-20-10 reps for time:\n• Double Unders\n• Sit-Ups"},
+{id:14,src:"girls",name:"Angie",type:"For Time",time:"~20 min",rx:"Bodyweight",score:"Time",yr:"",desc:"For time — complete each movement fully before moving on:\n• 100 Pull-Ups\n• 100 Push-Ups\n• 100 Sit-Ups\n• 100 Air Squats"},
+{id:15,src:"girls",name:"Barbara",type:"For Time",time:"~30 min",rx:"Bodyweight",score:"Time",yr:"",desc:"5 rounds for time:\n• 20 Pull-Ups  •  30 Push-Ups\n• 40 Sit-Ups  •  50 Air Squats\nRest exactly 3 min between rounds"},
+{id:16,src:"girls",name:"Nicole",type:"AMRAP",time:"20 min",rx:"Bodyweight",score:"Total pull-up reps",yr:"",desc:"AMRAP in 20 min:\n• 400m Run\n• Max Rep Pull-Ups (record each round)\nScore = total pull-up reps"},
+{id:17,src:"girls",name:"Kelly",type:"For Time",time:"~25 min",rx:"24/20 box, 20/14 lb ball",score:"Time",yr:"",desc:"5 rounds for time:\n• 400m Run\n• 30 Box Jumps @ 24/20\"\n• 30 Wall Ball Shots @ 20/14 lb"},
+{id:18,src:"girls",name:"Linda",type:"For Time",time:"~20 min",rx:"Bodyweight-based",score:"Time",yr:"",desc:"10-9-8-7-6-5-4-3-2-1 reps for time:\n• Deadlift @ 1.5x BW\n• Bench Press @ 1x BW\n• Clean @ 0.75x BW\nNickname: 3 Bars of Death"},
+{id:19,src:"girls",name:"Lynne",type:"For Load",time:"~20 min",rx:"Bodyweight bench",score:"Total reps",yr:"",desc:"5 rounds for max reps:\n• Bench Press @ bodyweight\n• Pull-Ups\nNo time cap. Rest as needed."},
+{id:20,src:"girls",name:"Eva",type:"For Time",time:"~45 min",rx:"70/53 lb KB",score:"Time",yr:"",desc:"5 rounds for time:\n• 800m Run\n• 30 KB Swings @ 70/53 lb\n• 30 Pull-Ups"},
+{id:21,src:"girls",name:"Fight Gone Bad",type:"For Score",time:"17 min",rx:"20/14 lb, 75/55 lb, 20 box",score:"Total reps",yr:"",desc:"3 rounds — 1 min/station, 1 min rest between rounds:\n• Wall Ball @ 20/14 lb\n• Sumo Deadlift High Pull @ 75/55 lb\n• Box Jump @ 20\"\n• Push Press @ 75/55 lb\n• Row (calories)"},
+{id:22,src:"girls",name:"The Filthy Fifty",type:"For Time",time:"~30 min",rx:"35/26 lb KB, 45/35 lb bar",score:"Time",yr:"",desc:"For time:\n• 50 Box Jumps @ 24/20\"  •  50 Jumping Pull-Ups\n• 50 KB Swings @ 35/26 lb  •  50 Walking Lunges\n• 50 Knees-to-Elbows  •  50 Push Press @ 45/35 lb\n• 50 Back Extensions  •  50 Wall Ball @ 20/14 lb\n• 50 Burpees  •  50 Double Unders"},
+{id:23,src:"girls",name:"Nasty Girls",type:"For Time",time:"~12 min",rx:"135/95 lb",score:"Time",yr:"",desc:"3 rounds for time:\n• 50 Air Squats\n• 7 Muscle-Ups\n• 10 Hang Power Cleans @ 135/95 lb"},
+{id:24,src:"girls",name:"Tabata This!",type:"Tabata",time:"16 min",rx:"Bodyweight / rower",score:"Total lowest reps",yr:"",desc:"Tabata (8x20 sec on / 10 sec off) per movement:\n• Row  → Squat  → Pull-Up  → Push-Up  → Sit-Up\nRest 1 min between movements\nScore = sum of lowest interval from each movement"},
+{id:25,src:"girls",name:"CrossFit Total",type:"For Load",time:"~45 min",rx:"Athlete's max",score:"Total load (3 lifts)",yr:"",desc:"3 attempts each to find 1-rep max:\n• Back Squat\n• Strict Press\n• Deadlift\nScore = sum of heaviest successful lifts"},
+{id:26,src:"girls",name:"Gwen",type:"For Load",time:"~15 min",rx:"Max load (same all sets)",score:"Load in lb",yr:"",desc:"15-12-9 reps for load:\n• Clean & Jerks (touch-and-go, unbroken sets)\nSame load all sets. Rest as needed."},
+{id:27,src:"girls",name:"Hope",type:"For Score",time:"15 min",rx:"75/55 lb, 24/20 box",score:"Total reps",yr:"",desc:"3 rounds — Fight Gone Bad format (1 min/station, 1 min rest):\n• Burpees\n• Power Snatch @ 75/55 lb\n• Box Jump 24/20\"\n• Thruster @ 75/55 lb\n• CTB Pull-Ups"},
+{id:28,src:"girls",name:"Chelsea XXX",type:"EMOM",time:"30 min",rx:"Bodyweight",score:"Rounds completed",yr:"",desc:"EMOM for 30 min (hard version):\n• 10 Pull-Ups\n• 15 Push-Ups\n• 20 Air Squats\nIf you fall off pace, drop to Cindy reps"},
+{id:29,src:"girls",name:"Death by Pull-Ups",type:"EMOM",time:"Until failure",rx:"Bodyweight",score:"Last completed minute",yr:"",desc:"EMOM — add 1 pull-up each minute:\nMin 1: 1 Pull-Up  → Min 2: 2 Pull-Ups  → etc.\nContinue until you cannot complete reps in the minute"},
+{id:30,src:"girls",name:"Maggie",type:"For Time",time:"~35 min",rx:"Bodyweight",score:"Time",yr:"",desc:"5 rounds for time:\n• 20 Handstand Push-Ups\n• 40 Pull-Ups\n• 60 Pistols (alternating legs)"},
+{id:31,src:"girls",name:"Megan",type:"For Time",time:"~12 min",rx:"53/35 lb KB",score:"Time",yr:"",desc:"21-15-9 reps for time:\n• Burpees\n• KB Swings @ 53/35 lb\n• Double-Unders"},
+// HERO WODs
+{id:100,src:"hero",name:"Murph",type:"For Time",time:"~45-60 min",rx:"20/14 lb vest",score:"Time",yr:"",desc:"For time (w/ 20/14 lb vest):\n• 1 Mile Run\n• 100 Pull-Ups  •  200 Push-Ups  •  300 Air Squats\n• 1 Mile Run\nPartition as needed.\nIn honor of Navy Lt. Michael Murphy, KIA 2005"},
+{id:101,src:"hero",name:"DT",type:"For Time",time:"~10 min",rx:"155/105 lb",score:"Time",yr:"",desc:"5 rounds for time:\n• 12 Deadlifts  •  9 Hang Power Cleans  •  6 Push Jerks\n(same barbell throughout)\nIn honor of USAF SSgt Timothy P. Davis, KIA 2009"},
+{id:102,src:"hero",name:"Nate",type:"AMRAP",time:"20 min",rx:"70/53 lb KB",score:"Rounds + reps",yr:"",desc:"AMRAP in 20 min:\n• 2 Muscle-Ups\n• 4 Handstand Push-Ups\n• 8 KB Swings\nIn honor of Navy SEAL Nate Hardy, KIA 2008"},
+{id:103,src:"hero",name:"Tommy V",type:"For Time",time:"~20 min",rx:"115/75 lb",score:"Time",yr:"",desc:"For time:\n• 21 Thrusters → 12 Rope Climbs (15 ft)\n• 15 Thrusters → 9 Rope Climbs\n• 9 Thrusters → 6 Rope Climbs\nIn honor of Senior CPO Thomas Valentine, KIA 2008"},
+{id:104,src:"hero",name:"The Seven",type:"For Time",time:"~35 min",rx:"135/245/70 lb",score:"Time",yr:"",desc:"7 rounds for time:\n• 7 HSPU  •  7 Thrusters @ 135/95 lb\n• 7 Knees-to-Elbows  •  7 Deadlifts @ 245/165 lb\n• 7 Burpees  •  7 KB Swings @ 70/53 lb  •  7 Pull-Ups\nIn honor of 7 CIA officers killed in Afghanistan, 2009"},
+{id:105,src:"hero",name:"Kalsu",type:"For Time",time:"Until done",rx:"135/95 lb",score:"Time",yr:"",desc:"For time:\n• 100 Thrusters @ 135/95 lb\n• 5 Burpees at start AND at top of every minute\nIn honor of Army 1Lt. Robert James Kalsu, KIA Vietnam 1970"},
+{id:106,src:"hero",name:"The Chief",type:"AMRAP",time:"19 min",rx:"135/95 lb",score:"Total rounds (all 5)",yr:"",desc:"5 x 3-minute AMRAPs with 1 min rest between:\nEach AMRAP:\n• 3 Power Cleans @ 135/95 lb\n• 6 Push-Ups\n• 9 Air Squats\nIn honor of all US Navy Chief Petty Officers"},
+{id:107,src:"hero",name:"Randy",type:"For Time",time:"~10 min",rx:"75/55 lb",score:"Time",yr:"",desc:"75 Power Snatches for time\nIn honor of Randy Simmons, LAPD SWAT, KIA 2008"},
+{id:108,src:"hero",name:"JT",type:"For Time",time:"~20 min",rx:"Bodyweight",score:"Time",yr:"",desc:"21-15-9 reps for time:\n• Handstand Push-Ups\n• Ring Dips\n• Push-Ups\nIn honor of Navy SEAL PO1 Jeff Taylor, KIA 2005"},
+{id:109,src:"hero",name:"Hansen",type:"For Time",time:"~35 min",rx:"70/53 lb KB",score:"Time",yr:"",desc:"5 rounds for time:\n• 30 KB Swings @ 70/53 lb\n• 30 Burpees\n• 30 GHD Sit-Ups\nIn honor of USMC SSgt Daniel Hansen, KIA 2009"},
+{id:110,src:"hero",name:"Danny",type:"AMRAP",time:"20 min",rx:"115/75 lb, 24/20 box",score:"Rounds + reps",yr:"",desc:"AMRAP in 20 min:\n• 30 Box Jumps @ 24/20\"\n• 20 Push Press @ 115/75 lb\n• 30 Pull-Ups\nIn honor of Oakland SWAT Sgt. Daniel Sakai, KIA 2009"},
+{id:111,src:"hero",name:"Wittman",type:"For Time",time:"~25 min",rx:"53/35 lb KB, 95/65 lb",score:"Time",yr:"",desc:"7 rounds for time:\n• 15 KB Swings @ 53/35 lb\n• 15 Power Cleans @ 95/65 lb\n• 15 Box Jumps @ 24/20\"\nIn honor of Army Sgt Jeremiah Wittman, KIA 2010"},
+{id:112,src:"hero",name:"Nutts",type:"For Time",time:"~30 min",rx:"250/175 lb, 45 lb plate",score:"Time",yr:"",desc:"For time:\n• 10 HSPU  •  15 Deadlifts @ 250/175 lb\n• 25 Box Jumps @ 30/24\"  •  50 Pull-Ups\n• 100 Wall Ball @ 20/14 lb  •  200 Double Unders\n• 400m Run (carry 45/35 lb plate)\nIn honor of Canadian Lt Andrew Nuttall, KIA 2009"},
+{id:113,src:"hero",name:"Abbate",type:"For Time",time:"~45 min",rx:"155/105 lb",score:"Time",yr:"",desc:"For time:\n• 1 Mile Run\n• 21 Clean & Jerks @ 155/105 lb\n• 800m Run\n• 21 Clean & Jerks\n• 1 Mile Run\nIn honor of USMC Sgt Matthew Abbate, KIA 2010"},
+{id:114,src:"hero",name:"Adam Brown",type:"For Time",time:"~35 min",rx:"295/145 lb DL, 195 lb bench",score:"Time",yr:"",desc:"2 rounds for time:\n• 24 Deadlifts @ 295/205 lb  •  24 Box Jumps @ 24/20\"\n• 24 Wall Ball @ 20/14 lb  •  24 Bench Press @ 195/125 lb\n• 24 Box Jumps  •  24 Wall Ball  •  24 Cleans @ 145/100 lb\nIn honor of Navy SEAL CPO Adam Brown, KIA 2010"},
+{id:115,src:"hero",name:"Badger",type:"For Time",time:"~35 min",rx:"95/65 lb",score:"Time",yr:"",desc:"3 rounds for time:\n• 30 Squat Cleans @ 95/65 lb\n• 30 Pull-Ups\n• 800m Run\nIn honor of Navy CPO Mark Carter, KIA 2007"},
+{id:116,src:"hero",name:"Lumberjack 20",type:"For Time",time:"~45 min",rx:"275/70/115 lb, 24 box",score:"Time",yr:"",desc:"For time (20 reps each, 400m run between each):\n20 Deadlifts @ 275 lb → Run 400m\n20 KB Swings @ 70 lb → Run 400m\n20 OHS @ 115 lb → Run 400m\n20 Burpees → Run 400m\n20 CTB Pull-Ups → Run 400m\n20 Box Jumps @ 24\" → Run 400m\n20 DB Squat Cleans @ 45 lb → Run 400m\nIn honor of 12 Fort Hood soldiers KIA 2009"},
+{id:117,src:"hero",name:"Holleyman",type:"AMRAP",time:"20 min",rx:"225/155 lb clean, 20/14 lb ball",score:"Rounds + reps",yr:"",desc:"AMRAP in 20 min:\n• 5 Wall Ball @ 20/14 lb\n• 3 Handstand Push-Ups\n• 1 Power Clean @ 225/155 lb\nIn honor of Army SSgt Aaron Holleyman, KIA 2004"},
+{id:118,src:"hero",name:"Jack",type:"AMRAP",time:"20 min",rx:"115/75 lb, 53/35 lb KB",score:"Rounds + reps",yr:"",desc:"AMRAP in 20 min:\n• 10 Push Press @ 115/75 lb\n• 10 KB Swings @ 53/35 lb\n• 10 Box Jumps @ 24/20\"\nIn honor of Army SSgt Jack Martin, KIA 2005"},
+{id:119,src:"hero",name:"Tyler",type:"For Time",time:"~20 min",rx:"95/65 lb",score:"Time",yr:"",desc:"5 rounds for time:\n• 7 Muscle-Ups\n• 21 Sumo Deadlift High Pulls @ 95/65 lb\nIn honor of Army 1Lt Tyler Parten, KIA 2009"},
+{id:120,src:"hero",name:"Ryan",type:"For Time",time:"~20 min",rx:"Bodyweight",score:"Time",yr:"",desc:"5 rounds for time:\n• 7 Muscle-Ups\n• 21 Burpees\nIn honor of Maplewood Firefighter Ryan Hummert, KIA 2008"},
+{id:121,src:"hero",name:"Erin",type:"For Time",time:"~20 min",rx:"40/30 lb DB",score:"Time",yr:"",desc:"5 rounds for time:\n• 15 DB Split Cleans @ 40/30 lb\n• 21 Pull-Ups\nIn honor of Canadian Army MCpl Erin Doyle, KIA 2008"},
+{id:122,src:"hero",name:"Mr. Joshua",type:"For Time",time:"~25 min",rx:"250/175 lb",score:"Time",yr:"",desc:"5 rounds for time:\n• 400m Run\n• 30 GHD Sit-Ups\n• 15 Deadlifts @ 250/175 lb\nIn honor of SEAL SO1 Joshua Harris, KIA 2008"},
+{id:123,src:"hero",name:"Glen",type:"For Time",time:"~30 min",rx:"135/95 lb",score:"Time",yr:"",desc:"For time:\n• 30 Clean & Jerks @ 135/95 lb\n• 1 Mile Run  •  10 Muscle-Ups  •  1 Mile Run\nIn honor of Army Sgt Glen Watkins, KIA 2008"},
+{id:124,src:"hero",name:"Michael",type:"For Time",time:"~30 min",rx:"Bodyweight",score:"Time",yr:"",desc:"3 rounds for time:\n• 800m Run\n• 50 Back Extensions\n• 50 Sit-Ups\nIn honor of Navy Lt. Michael McGreevy, KIA 2005"},
+{id:125,src:"hero",name:"Griff",type:"For Time",time:"~20 min",rx:"Bodyweight",score:"Time",yr:"",desc:"For time:\n• 800m Run Forward  •  400m Run Backwards\n• 800m Run Forward  •  400m Run Backwards\nIn honor of USAF SSgt Travis Griffin, KIA 2008"},
+{id:126,src:"hero",name:"Chad",type:"For Time",time:"~60 min",rx:"20 box, 20/14 lb vest",score:"Time",yr:"",desc:"1,000 Box Step-Ups for time (wear vest)\nIn honor of Navy SEAL Chad Wilkinson, KIA 2018"},
+{id:127,src:"hero",name:"Loredo",type:"For Time",time:"~25 min",rx:"Bodyweight",score:"Time",yr:"",desc:"6 rounds for time:\n• 24 Air Squats  •  24 Push-Ups\n• 24 Walking Lunges  •  400m Run\nIn honor of Army SSgt Joshua Loredo, KIA 2011"},
+{id:128,src:"hero",name:"Santiago",type:"For Time",time:"~25 min",rx:"35/25 lb DB, 135/95 lb bar",score:"Time",yr:"",desc:"7 rounds for time:\n• 18 DB Hang Squat Cleans @ 35/25 lb\n• 18 Pull-Ups\n• 10 Power Cleans @ 135/95 lb\n• 10 Handstand Push-Ups\nIn honor of Army Sgt Anibal Santiago, KIA 2010"},
+{id:129,src:"hero",name:"Jason",type:"For Time",time:"~30 min",rx:"Bodyweight",score:"Time",yr:"",desc:"100 Squats → 5 Muscle-Ups\n75 Squats → 10 Muscle-Ups\n50 Squats → 15 Muscle-Ups\n25 Squats → 20 Muscle-Ups\nIn honor of SEAL SO1 Jason Lewis, KIA 2007"},
+{id:130,src:"hero",name:"Daniel",type:"For Time",time:"~20 min",rx:"95/65 lb",score:"Time",yr:"",desc:"For time:\n• 50 Pull-Ups  •  400m Run\n• 21 Thrusters @ 95/65 lb  •  800m Run\n• 21 Thrusters  •  400m Run\n• 50 Pull-Ups\nIn honor of Army Sgt. Daniel Crabtree, KIA 2006"},
+{id:131,src:"hero",name:"Whitten",type:"For Time",time:"~30 min",rx:"70/53 lb KB, 24/20 box",score:"Time",yr:"",desc:"5 rounds for time:\n• 22 KB Swings @ 70/53 lb\n• 22 Box Jumps @ 24/20\"\n• 400m Run\nIn honor of Army Capt Dan Whitten, KIA 2010"},
+{id:132,src:"hero",name:"Forrest",type:"For Time",time:"~30 min",rx:"Bodyweight",score:"Time",yr:"",desc:"3 rounds for time:\n• 20 L-Pull-Ups  •  30 Toes-to-Bar\n• 40 Burpees  •  800m Run\nIn honor of Army SFC Forrest Rowell, KIA 2005"},
+// CROSSFIT OPEN 2015
+{id:1501,src:"open",name:"15.1",type:"AMRAP",time:"9 min + 6 min",rx:"115/75 lb",score:"Reps + 1RM",yr:"2015",desc:"2015 Open Workout 1\nAMRAP in 9 min:\n• 15 Toes-to-Bars\n• 10 Deadlifts @ 115/75 lb\n• 5 Snatches @ 115/75 lb\n\nThen (15.1a) 9:00-15:00:\n• 1-Rep-Max Clean & Jerk"},
+{id:1502,src:"open",name:"15.2",type:"For Time",time:"Until failure",rx:"95/65 lb",score:"Reps",yr:"2015",desc:"2015 Open Workout 2\nEvery 3 min, 2 rounds of:\n• Overhead Squats\n• Chest-to-Bar Pull-Ups\n(Start at 10 reps, add 2 reps each 3-min window)\nContinue until you fail to complete both rounds"},
+{id:1503,src:"open",name:"15.3",type:"AMRAP",time:"14 min",rx:"20 lb ball, muscle-ups",score:"Reps",yr:"2015",desc:"2015 Open Workout 3\nAMRAP in 14 min:\n• 7 Muscle-Ups\n• 50 Wall Ball Shots @ 20/14 lb\n• 100 Double-Unders"},
+{id:1504,src:"open",name:"15.4",type:"AMRAP",time:"8 min",rx:"185/125 lb clean",score:"Reps",yr:"2015",desc:"2015 Open Workout 4\nAMRAP in 8 min (ascending ladder):\n• 3 HSPU + 3 Cleans @ 185/125 lb\n• 6 HSPU + 3 Cleans\n• 9 HSPU + 3 Cleans\n• 12 HSPU + 6 Cleans... (add 3 HSPU each round)"},
+{id:1505,src:"open",name:"15.5",type:"For Time",time:"~25 min",rx:"95/65 lb",score:"Time",yr:"2015",desc:"2015 Open Workout 5  (repeat of 14.5)\nFor Time:\n• 27 Cal Row  •  27 Thrusters @ 95/65 lb\n• 21 Cal Row  •  21 Thrusters\n• 15 Cal Row  •  15 Thrusters"},
+// CROSSFIT OPEN 2016
+{id:1601,src:"open",name:"16.1",type:"AMRAP",time:"20 min",rx:"95/65 lb",score:"Rounds + reps",yr:"2016",desc:"2016 Open Workout 1\nAMRAP in 20 min:\n• 25 ft Overhead Walking Lunges @ 95/65 lb\n• 8 Bar Facing Burpees\n• 25 ft Overhead Walking Lunges\n• 8 Chest-to-Bar Pull-Ups"},
+{id:1602,src:"open",name:"16.2",type:"For Time",time:"~20 min",rx:"135-315 lb",score:"Reps / Time",yr:"2016",desc:"2016 Open Workout 2\n4-min clock, extend 4 min each completed round:\n• 25 TTB  •  50 DU  •  15 Squat Cleans @ 135/85 lb\nThen 13 @ 185/115  →  11 @ 225/145  →  9 @ 275/175  →  7 @ 315/205"},
+{id:1603,src:"open",name:"16.3",type:"AMRAP",time:"7 min",rx:"75/55 lb",score:"Rounds + reps",yr:"2016",desc:"2016 Open Workout 3\nAMRAP in 7 min:\n• 10 Power Snatches @ 75/55 lb\n• 3 Bar Muscle-Ups"},
+{id:1604,src:"open",name:"16.4",type:"AMRAP",time:"13 min",rx:"225/155 lb DL, 20/14 lb ball",score:"Reps",yr:"2016",desc:"2016 Open Workout 4  (repeat of 14.4)\nAMRAP in 13 min:\n• 55 Deadlifts @ 225/155 lb\n• 55 Wall Ball Shots @ 20/14 lb\n• 55 Cal Row\n• 55 Handstand Push-Ups"},
+{id:1605,src:"open",name:"16.5",type:"For Time",time:"~25 min",rx:"95/65 lb",score:"Time",yr:"2016",desc:"2016 Open Workout 5  (repeat of 11.6)\n21-18-15-12-9-6-3 Reps for Time:\n• Thrusters @ 95/65 lb\n• Bar Facing Burpees"},
+// CROSSFIT OPEN 2017
+{id:1701,src:"open",name:"17.1",type:"For Time",time:"~20 min",rx:"50/35 lb DB, 24/20 box",score:"Time",yr:"2017",desc:"2017 Open Workout 1\nFor Time (10-20-30-40-50 DB snatches, 15 BBJO between each):\n• DB Snatches @ 50/35 lb (alternating arms)\n• 15 Burpee Box Jump-Overs @ 24/20\" (between each snatch round)\nTime cap: 20 min"},
+{id:1702,src:"open",name:"17.2",type:"AMRAP",time:"12 min",rx:"50/35 lb DB",score:"Rounds + reps",yr:"2017",desc:"2017 Open Workout 2\nAMRAP in 12 min (alternating every 2 rounds):\n• 50 ft Weighted Walking Lunge @ 50/35 lb DB\n• 16 Toes-to-Bars (rounds 1-2, 5-6...) / Bar Muscle-Ups (rounds 3-4, 7-8...)\n• 8 DB Power Cleans @ 50/35 lb"},
+{id:1703,src:"open",name:"17.3",type:"For Time",time:"~24 min",rx:"95-265 lb (M) 65-185 lb (W)",score:"Reps / Time",yr:"2017",desc:"2017 Open Workout 3  (timed sections, extend 4 min each)\n3 rounds CTB Pull-Ups + Squat Snatches per section:\n• Section 1 (8 min): 6 CTB + 6 snatches @95/65\n• Section 2: 7 CTB + 5 snatches @135/95\n• Section 3: 8 CTB + 4 snatches @185/135\n• Continues to 225, 245, 265 lb"},
+{id:1704,src:"open",name:"17.4",type:"AMRAP",time:"13 min",rx:"225/155 lb DL, 20/14 lb ball",score:"Reps",yr:"2017",desc:"2017 Open Workout 4  (repeat of 16.4)\nAMRAP in 13 min:\n• 55 Deadlifts @ 225/155 lb\n• 55 Wall Ball Shots @ 20/14 lb\n• 55 Cal Row\n• 55 Handstand Push-Ups"},
+{id:1705,src:"open",name:"17.5",type:"For Time",time:"~20 min",rx:"95/65 lb",score:"Time",yr:"2017",desc:"2017 Open Workout 5\nFor Time — 10 Rounds:\n• 9 Thrusters @ 95/65 lb\n• 35 Double-Unders\nTime cap: 40 minutes"},
+// CROSSFIT OPEN 2018
+{id:1801,src:"open",name:"18.1",type:"AMRAP",time:"20 min",rx:"50/35 lb DB",score:"Reps",yr:"2018",desc:"2018 Open Workout 1\nAMRAP in 20 min:\n• 8 Toes-to-Bars\n• 10 DB Hang Clean & Jerks @ 50/35 lb (5 each arm)\n• 14/12 Cal Row"},
+{id:1802,src:"open",name:"18.2",type:"For Time",time:"~12 min",rx:"50/35 lb DB + 1RM clean",score:"Time + Load",yr:"2018",desc:"2018 Open Workout 2\nFor Time — ascending ladder (12 min cap):\n• 1-2-3-4-5-6-7-8-9-10 DB Squats @ 50/35 lb (double)\n• 1-2-3-4-5-6-7-8-9-10 Bar Facing Burpees\n\nThen (18.2a) remaining time:\n• 1-Rep-Max Clean"},
+{id:1803,src:"open",name:"18.3",type:"For Time",time:"14 min cap",rx:"115/80 lb OHS, 50/35 lb DB",score:"Time / Reps",yr:"2018",desc:"2018 Open Workout 3\n2 Rounds for Time (14 min cap):\n• 100 Double-Unders\n• 20 Overhead Squats @ 115/80 lb\n• 100 Double-Unders\n• 12 Ring Muscle-Ups\n• 100 Double-Unders\n• 20 DB Snatches @ 50/35 lb\n• 100 Double-Unders\n• 12 Bar Muscle-Ups"},
+{id:1804,src:"open",name:"18.4",type:"For Time",time:"9 min cap",rx:"225/155 lb DL",score:"Time / Reps",yr:"2018",desc:"2018 Open Workout 4\nFor Time (9 min cap):\n• 21 Deadlifts @ 225/155 lb\n• 21 Handstand Push-Ups\n• 15 Deadlifts  •  15 HSPU\n• 9 Deadlifts  •  9 HSPU\nThen:\n• 21-15-9 Deadlifts @ 315/205 lb\n• 50 ft Handstand Walk (between each set)"},
+{id:1805,src:"open",name:"18.5",type:"AMRAP",time:"7 min",rx:"100/65 lb",score:"Reps",yr:"2018",desc:"2018 Open Workout 5  (repeat of 11.6/16.5 format)\nAMRAP in 7 min (3-6-9-12... ladder):\n• Thrusters @ 100/65 lb\n• CTB Pull-Ups"},
+// CROSSFIT OPEN 2019
+{id:1901,src:"open",name:"19.1",type:"AMRAP",time:"15 min",rx:"20/14 lb ball",score:"Reps",yr:"2019",desc:"2019 Open Workout 1\nAMRAP in 15 min:\n• 19 Wall Ball Shots @ 20/14 lb (10/9 ft)\n• 19 Cal Row"},
+{id:1902,src:"open",name:"19.2",type:"For Time",time:"~20 min",rx:"135-315 lb",score:"Time / Reps",yr:"2019",desc:"2019 Open Workout 2  (timed sections)\nBegin with 4 min:\n• 25 TTB  •  50 DU  •  15 Squat Cleans @ 135/85 lb\nIf complete, add 4 min:\n• 25 TTB  •  50 DU  •  13 SC @ 185/115\nThen 11 @ 225/145  →  9 @ 275/175  →  7 @ 315/205"},
+{id:1903,src:"open",name:"19.3",type:"For Time",time:"~10 min",rx:"50/35 lb DB",score:"Time / Reps",yr:"2019",desc:"2019 Open Workout 3\nFor Time (10 min cap):\n• 200 ft DB OH Walking Lunge @ 50/35 lb\n• 50 DB Box Step-Ups @ 50/35 lb, 24/20\"\n• 50 Strict HSPU\n• 200 ft Handstand Walk"},
+{id:1904,src:"open",name:"19.4",type:"For Time",time:"~12 min",rx:"95-185 lb + max BMU",score:"Time / Reps",yr:"2019",desc:"2019 Open Workout 4\n3 Rounds for Time (12 min cap):\n• 10 Snatches @ 95/65 lb\n• 12 Bar Facing Burpees\n• 10 Snatches @ 135/85 lb\n• 12 Bar Facing Burpees\n• 10 Snatches @ 185/105 lb\n• 12 Bar Facing Burpees\nThen: max reps Bar Muscle-Ups in remaining time"},
+{id:1905,src:"open",name:"19.5",type:"For Time",time:"~20 min",rx:"95/65 lb",score:"Time",yr:"2019",desc:"2019 Open Workout 5  (repeat of 17.5)\n10 Rounds for Time:\n• 9 Thrusters @ 95/65 lb\n• 35 Double-Unders\nTime cap: 40 minutes"},
+// CROSSFIT OPEN 2020
+{id:2001,src:"open",name:"20.1",type:"For Time",time:"15 min cap",rx:"95/65 lb",score:"Time / Reps",yr:"2020",desc:"2020 Open Workout 1\n10 Rounds for Time (15 min cap):\n• 8 Ground-to-Overheads @ 95/65 lb\n• 10 Bar Facing Burpees"},
+{id:2002,src:"open",name:"20.2",type:"AMRAP",time:"20 min",rx:"2x50/35 lb DB",score:"Rounds + reps",yr:"2020",desc:"2020 Open Workout 2\nAMRAP in 20 min:\n• 4 DB Thrusters @ 2x50/35 lb\n• 6 Toes-to-Bar\n• 24 Double-Unders"},
+{id:2003,src:"open",name:"20.3",type:"For Time",time:"9 min cap",rx:"225/155 lb DL",score:"Time / Reps",yr:"2020",desc:"2020 Open Workout 3\nFor Time (9 min cap):\n• 21-15-9 Deadlifts @ 225/155 lb + HSPU\nThen:\n• 21 Deadlifts @ 315/205 lb + 50 ft HS Walk\n• 15 Deadlifts + 50 ft HS Walk\n• 9 Deadlifts + 50 ft HS Walk"},
+{id:2004,src:"open",name:"20.4",type:"AMRAP",time:"20 min",rx:"95/65 lb",score:"Rounds + reps",yr:"2020",desc:"2020 Open Workout 4\nAMRAP in 20 min:\n• 30 Box Jumps @ 24/20\"\n• 15 Clean & Jerks @ 95/65 lb"},
+// CROSSFIT OPEN 2021
+{id:2101,src:"open",name:"21.1",type:"For Time",time:"15 min cap",rx:"Jump rope",score:"Time / Reps",yr:"2021",desc:"2021 Open Workout 1\nFor Time (10-8-6-4-2 reps, 15 min cap):\n• Wall Walks\n• Double Unders x10 per rep  (100-80-60-40-20)"},
+{id:2102,src:"open",name:"21.2",type:"AMRAP",time:"20 min",rx:"95/65 lb",score:"Rounds + reps",yr:"2021",desc:"2021 Open Workout 2\nAMRAP in 20 min:\n• 95-lb thrusters (10 reps)\n• 16 chest-to-bar pull-ups (add 2 per round)\n• Bar muscle-ups (8, increasing 2 per round)\nAlternate between two ascending ladders"},
+{id:2103,src:"open",name:"21.3",type:"For Time",time:"15 min cap",rx:"95/65 lb",score:"Time / Reps",yr:"2021",desc:"2021 Open Workout 3\nFor Time (15 min cap):\n• 15 Front Squats @ 95/65 lb  •  30 Toes-to-Bar\n• 15 Thrusters @ 95/65 lb  •  30 CTB Pull-Ups\n• 15 Power Snatches @ 95/65 lb  •  30 Bar Muscle-Ups"},
+// CROSSFIT OPEN 2022
+{id:2201,src:"open",name:"22.1",type:"AMRAP",time:"15 min",rx:"50/35 lb DB, 24/20 box",score:"Rounds + reps",yr:"2022",desc:"2022 Open Workout 1\nAMRAP in 15 min:\n• 3 Wall Walks\n• 12 DB Snatches @ 50/35 lb\n• 15 Box Jumps @ 24/20\""},
+{id:2202,src:"open",name:"22.2",type:"AMRAP",time:"20 min",rx:"225/155 lb",score:"Rounds + reps",yr:"2022",desc:"2022 Open Workout 2  (repeat of 16.4)\nAMRAP in 20 min:\n• 5 Deadlifts @ 225/155 lb\n• 5 Hang Power Cleans @ 225/155 lb\n• 5 Push Jerks @ 225/155 lb"},
+{id:2203,src:"open",name:"22.3",type:"For Time",time:"20 min cap",rx:"95/115/135 lb",score:"Time / Reps",yr:"2022",desc:"2022 Open Workout 3\nFor Time (20 min cap):\n• 21 Thrusters @ 95/65 lb + 21 CTB Pull-Ups\n• 15 Thrusters @ 115/75 lb + 15 Bar Muscle-Ups\n• 9 Thrusters @ 135/85 lb + 9 Ring Muscle-Ups"},
+// CROSSFIT OPEN 2023
+{id:2301,src:"open",name:"23.1",type:"AMRAP",time:"14 min",rx:"135/95 lb, 20/14 lb ball",score:"Total reps",yr:"2023",desc:"2023 Open Workout 1  (repeat of 14.4)\nAMRAP in 14 min:\n• 60 Cal Row  •  50 Toes-to-Bar\n• 40 Wall Ball @ 20/14 lb\n• 30 Cleans @ 135/95 lb\n• 20 Muscle-Ups"},
+{id:2302,src:"open",name:"23.2A",type:"For Load",time:"5 min",rx:"Max barbell",score:"1RM load",yr:"2023",desc:"2023 Open Workout 2A\nFind 1-Rep-Max Snatch in 5 minutes"},
+{id:2303,src:"open",name:"23.2B",type:"For Time",time:"10 min cap",rx:"75% of 2A weight",score:"Time",yr:"2023",desc:"2023 Open Workout 2B  (immediately after 23.2A)\nFor Time (10 min cap):\n• 20 Pull-Ups\n• 20 Box Jumps @ 24/20\"\n• 20 Power Snatches @ 75% of 23.2A weight"},
+{id:2304,src:"open",name:"23.3",type:"For Time",time:"~15 min",rx:"95/135/185/225 lb",score:"Time / Reps",yr:"2023",desc:"2023 Open Workout 3  (timed sections)\nPart 1 (6 min cap):\n• 5 Wall Walks + 50 DU + 15 Snatches @ 95/65 lb\n• 5 Wall Walks + 50 DU + 12 Snatches @ 135/85 lb\n+3 min: 20 Strict HSPU + 50 DU + 9 Snatches @ 185/125 lb\n+3 min: 20 Strict HSPU + 50 DU + 6 Snatches @ 225/155 lb"},
+// CROSSFIT OPEN 2024
+{id:2401,src:"open",name:"24.1",type:"For Time",time:"15 min cap",rx:"50/35 lb DB",score:"Time",yr:"2024",desc:"2024 Open Workout 1\n21-15-9 Reps for Time (15 min cap):\n• DB Snatches @ 50/35 lb (alternating arms per set)\n• Lateral Burpees Over the Dumbbell"},
+{id:2402,src:"open",name:"24.2",type:"For Time",time:"20 min cap",rx:"45 lb plate",score:"Time",yr:"2024",desc:"2024 Open Workout 2\nFor Time (20 min cap):\n• 1,000m Row\n• 50 Burpees to a Plate (6\" target)\n• 1,000m Row"},
+{id:2403,src:"open",name:"24.3",type:"For Time",time:"15 min cap",rx:"95/135 lb",score:"Time / Reps",yr:"2024",desc:"2024 Open Workout 3  (two parts, 15 min cap)\nPart 1 — 5 Rounds:\n• 10 Thrusters @ 95/65 lb  •  10 CTB Pull-Ups\nRest 1 min, then:\nPart 2 — 5 Rounds:\n• 7 Thrusters @ 135/95 lb  •  7 Bar Muscle-Ups"},
+// CROSSFIT OPEN 2025
+{id:2501,src:"open",name:"25.1",type:"AMRAP",time:"15 min",rx:"50/35 lb DB",score:"Rounds + reps",yr:"2025",desc:"2025 Open Workout 1  (ascending ladder)\nAMRAP in 15 min, start with 3 reps, add 3 each round:\n• Lateral Burpees Over Dumbbell\n• DB Hang Clean-to-Overhead @ 50/35 lb\n• 30 ft Walking Lunge (fixed)"},
+{id:2502,src:"open",name:"25.2",type:"For Time",time:"20 min cap",rx:"70/50 lb DB, 24/20 box",score:"Time / Reps",yr:"2025",desc:"2025 Open Workout 2\n4 Rounds for Time (20 min cap):\n• 10 DB Deadlifts @ 70/50 lb\n• 10 DB Box Step-Overs @ 24/20\"\n• 10 Strict HSPU (freestanding)"},
+{id:2503,src:"open",name:"25.3",type:"For Time",time:"15 min cap",rx:"24/20 box",score:"Time / Reps",yr:"2025",desc:"2025 Open Workout 3\nFor Time (15 min cap):\n• 100 Double Unders\n• 50 Box Jumps @ 24/20\"\n• 100 Double Unders\n• 25 Bar Muscle-Ups\n• 100 Double Unders"},
+// JOSH BRIDGES
+{id:300,src:"jb",name:"Burpee + Power Clean + Run",type:"For Time",time:"~15 min",rx:"95/65 lb",score:"Time",yr:"",desc:"21-15-9 reps for time:\n• Bar Facing Burpees\n• Power Cleans @ 95/65 lb\n400m Run after each round\n(Signature Josh Bridges workout)"},
+{id:301,src:"jb",name:"Squat Clean + MU + Bike",type:"For Time",time:"~15 min",rx:"225/155 lb",score:"Time",yr:"",desc:"For time — 4 rounds:\n• 6 Squat Cleans @ 225/155 lb\n• 6 Muscle-Ups\n• 20 Cal Assault Bike"},
+{id:302,src:"jb",name:"10-to-1 Power Ladder",type:"For Time",time:"~20 min",rx:"235/145/65 lb",score:"Time",yr:"",desc:"10-9-8-7-6-5-4-3-2-1 reps for time:\n• Deadlift @ 235 lb\n• Front Squat @ 145 lb\n• DB Bench Press @ 65 lb/hand\nTime cap: 20 minutes"},
+{id:303,src:"jb",name:"DB Snatch + GHD",type:"For Time",time:"~20 min",rx:"50/35 lb DB",score:"Time",yr:"",desc:"50-40-30-20-10 reps for time:\n• DB Snatch @ 50/35 lb (alternating arms)\n• GHD Sit-Ups (or anchored sit-ups)"},
+{id:304,src:"jb",name:"DB Ground-to-OH + Row",type:"For Time",time:"~15 min",rx:"50/35 lb DB",score:"Time",yr:"",desc:"For time:\n• 40 Cal Row + 40 DB G2OH\n• 30 Cal Row + 30 DB G2OH\n• 20 Cal Row + 20 DB G2OH\n• 10 Cal Row + 10 DB G2OH"},
+{id:305,src:"jb",name:"Deck of Cards",type:"For Time",time:"Until done",rx:"40/30 lb DB, 95/75 lb bar",score:"Time",yr:"",desc:"Continuous clock — deal 5 cards at a time, reps = card value:\n♥ Hearts: DB Man Makers @ 40/30 lb\n♠ Spades: Push-Ups\n♣ Clubs: Thrusters @ 95/75 lb\n♦ Diamonds: Pull-Ups\nNo rest between draws. Finish entire deck."},
+{id:306,src:"jb",name:"It's A Trap AMRAP",type:"AMRAP",time:"30 min",rx:"195 lb squat, 70 lb DB",score:"Rounds + reps",yr:"",desc:"Warm-Up — 6 rounds (1:1 work:rest):\n• 100 ft Sled Push @ 371/250 lb\n• 8 Bar Muscle-Ups\n\nMain — AMRAP 30 min:\n• Jacobs Ladder\n• 200m Run\n• 15 Back Squats @ 195 lb\n• 10 DB Bench Press @ 70 lb/hand"},
+{id:307,src:"jb",name:"Ring Dips + TTB + Run",type:"For Time",time:"~20 min",rx:"Bodyweight",score:"Time",yr:"",desc:"5 rounds for time:\n• 10 Ring Dips  •  10 Toes-to-Bar  •  200m Run\nRest 10 min, then:\n• 100 Walking Lunge Steps (50 each leg)"},
+{id:308,src:"jb",name:"Wall Ball + Clean + DU",type:"For Time",time:"~20 min",rx:"135/95 lb, 20/14 lb ball",score:"Time",yr:"",desc:"4 rounds for time:\n• 20 Wall Ball @ 20/14 lb\n• 15 Cleans @ 135/95 lb\n• 30 Double-Unders"},
+{id:309,src:"jb",name:"HSPU + CTB Superset",type:"For Time",time:"~15 min",rx:"Bodyweight",score:"Time per piece",yr:"",desc:"For time:\n• 15 Strict HSPU + 30 CTB Pull-Ups\nThen:\n• 10 Strict HSPU + 20 CTB Pull-Ups\nRest as needed between pieces"},
+{id:310,src:"jb",name:"Sprint Row Intervals",type:"Conditioning",time:"~20 min",rx:"Rower / Ski Erg",score:"Cals per round",yr:"",desc:"10 rounds:\n• 30 sec Max Cal Row (or Ski Erg)\n• Rest 90 sec\nGoal: consistent output every round. Track pace or cals."},
+{id:311,src:"jb",name:"Aerobic 400s",type:"Conditioning",time:"~20 min",rx:"Bodyweight",score:"Splits / total",yr:"",desc:"4 x 400m Run @ 1:20 pace\nRest exactly 1 min between each\n(Aerobic capacity work — controlled effort)"},
+{id:312,src:"jb",name:"Strict Pull-Up Ladder",type:"Strength",time:"~20 min",rx:"Bodyweight / weight belt",score:"Reps per set",yr:"",desc:"Every 2 minutes for 20 min:\n• Max Strict Pull-Ups (stop 1-2 shy of failure)\n10 total sets. Record reps per set.\nGoal: consistent sets. Advanced: use weight belt."},
+{id:313,src:"jb",name:"Full Chipper",type:"For Time",time:"~25 min",rx:"135/95 lb, 20/14 lb ball",score:"Time",yr:"",desc:"For time:\n• 50 Cal Row  →  40 Wall Ball  →  30 Box Jumps\n• 20 Thrusters @ 135/95 lb  →  10 Bar Muscle-Ups\nRest 3 min, then reverse:\n• 10 Bar Muscle-Ups  →  20 Thrusters\n• 30 Box Jumps  →  40 Wall Ball  →  50 Cal Row"},
+{id:314,src:"jb",name:"EMOM Barbell Complex",type:"EMOM",time:"~20 min",rx:"185/125 lb",score:"Rounds completed",yr:"",desc:"EMOM 20 min — alternating:\nOdd min: 3 Power Cleans @ 185 lb\nEven min: 3 Push Jerks @ 185 lb\nGoal: unbroken every minute"},
+{id:315,src:"jb",name:"Double KB AMRAP",type:"AMRAP",time:"20 min",rx:"53/35 lb KBs (double)",score:"Rounds + reps",yr:"",desc:"AMRAP 20 min (keep both KBs in hands throughout):\n• 10 Double KB Deadlifts\n• 10 Double KB Swings\n• 10 Double KB Front Squats\n• 10 Double KB Push Press"},
+{id:316,src:"jb",name:"Power Snatch Strength + WOD",type:"Strength + WOD",time:"~45 min",rx:"225/155 lb",score:"Time (WOD)",yr:"",desc:"Strength:\n• Power Snatch: find 3RM, then 5x3 @70%\n• Snatch Pulls: 6x3 @85%\n• Shoulder Press: find 5RM, then 5x5 building\n\nWOD — For Time — 4 rounds:\n• 6 Squat Cleans @ 225/155 lb\n• 6 Muscle-Ups\n• 20 Cal Assault Bike"},
+// NOAH OHLSEN
+{id:400,src:"noah",name:"W1/D2 — Amanda Strength",type:"For Time",time:"75 min",rx:"135/95 lb",score:"Time",yr:"",desc:"WOD (13-11-9-7-5): Muscle Up + Squat Snatch @ 135/95\n\nStrength:\n• OHS 3x3 + Clean grip DL 3x3\n• Front squat 3x3 + Strict press 3x10\n• Strict pull ups 3x20"},
+{id:401,src:"noah",name:"W1/D3 — Triple For Time",type:"For Time",time:"45 min",rx:"135/95 lb",score:"Time",yr:"",desc:"WOD 1 — 3 Rounds: 400m run + 6 sandbag OS (150/100) + 12 hang squat clean thruster (135/95)\nWOD 2 — 5 Rounds: 2 legless rope climbs + 8 DB step overs (70/50) + 16 power clean (115/85)\nWOD 3 — For Time: 25 cal row + 50 WB (30/20) + 25 cal row + 100 WB (20/14) + 25 cal row"},
+{id:402,src:"noah",name:"W1/D4 — Bike + Clean Ladder",type:"For Time",time:"45 min",rx:"135-315 lb",score:"Time",yr:"",desc:"WOD 1 — For Time: 50 cal assault bike + 100 GHD + 50 cal assault bike\nWOD 2 — BMU / Squat Clean ladder:\n6 BMU/18 SC 135# → 12 BMU/12 SC 225# → 18 BMU/6 SC 315#\nStrength: Power snatch from high blocks, 1 rep EMOM x30 @185#"},
+{id:403,src:"noah",name:"W2/D4 — Skill + Chipper",type:"For Time",time:"45 min",rx:"185 lb snatch",score:"Time",yr:"",desc:"Skill: Power snatch x1 / hang squat snatch x1 EMOM 5 min @185#\nStrength: Thrusters 3x10 @135# + 3 C&J 185# x3\n\nWOD — For Time: 20 CTB + 20 pistols + 100 DU + 10 freestanding HSPU + 20 TTB"},
+{id:404,src:"noah",name:"W2/D5 — Heavy Weightlifting",type:"Strength + WOD",time:"45 min",rx:"245-435 lb",score:"Time",yr:"",desc:"Weightlifting: Squat snatch @245-265# + snatch pulls @280# + squat C&J @265-305# + DL to triple @435# + FS 10/6/2\n\nWOD 1 — For Time: 20 cal bike + 20 cal row + 20 cal bike\nWOD 2 — 3 Rounds: 4 HSPU + 6 MU + 25ft HS walk + 25ft OH lunge 70#"},
+{id:405,src:"noah",name:"W3/D2 — Weightlifting + EMOM",type:"EMOM",time:"45 min",rx:"155-325 lb",score:"Rounds",yr:"",desc:"Weightlifting: Squat snatch 2x7 + squat clean/FS/jerk 7 sets + back squat 3x3 + deadlift 3x3\nAccessory: DB step overs + single arm DB OHS + KB OH lunges\n\nWOD — EMOM 10: thrusters / C&J / hang squat clean / power snatch / hang power clean @155#"},
+{id:406,src:"noah",name:"W4/D2 — 5xEMOM Blocks",type:"EMOM",time:"60 min",rx:"Bodyweight",score:"Rounds",yr:"",desc:"5 x EMOM 12 min blocks:\n• Bike 15 sec @1000W / Pistols + GHD\n• Row 15 sec @2200 cal/hr / 2-3 Rope Climbs\n• Bike 15 sec @1000W / Bar Facing Burpees\n• Row 15 sec @2200 cal/hr / AMRAP strict pull ups\n• Bike 15 sec @1000W / AMRAP strict HSPU"},
+{id:407,src:"noah",name:"W4/D1 — Snatch + Wall Ball Chipper",type:"For Time",time:"45 min",rx:"155-365 lb",score:"Time",yr:"",desc:"Weightlifting: Power snatch speed ladder 155/185/205# + squat clean x1/split jerk x2 from blocks + FS 5x5 @310#\n\nWOD — For Time: 60 WB 14# unbroken + 20 DB step overs 70# + 40 WB 20# unbroken + 20 DL 365# + 20 WB 30# unbroken + 20 PC 225#"},
+{id:408,src:"noah",name:"W4/D3 — AMRAP + Row",type:"AMRAP",time:"45 min",rx:"95/65 lb",score:"Rounds + reps",yr:"",desc:"Weightlifting: Squat snatch x1/hang snatch x1 x10 @155-205# + squat C&J 6x2 @245-315#\n\nWOD 1 — 12 min AMRAP (3-6-9-12...): TTB + thruster (95/65) + box jump (24/20)\n\nConditioning: Accumulate 3,500m row @1:35 pace"},
+{id:409,src:"noah",name:"W4/D5 — Heavy C&J Day",type:"For Time",time:"45 min",rx:"275-405 lb",score:"Time",yr:"",desc:"Weightlifting: Squat C&J 6 doubles @275-315# + PC & push jerk 10/8/6 @135/155/185# + FS 5x5 @305#\n\nWOD 1 — For Time: 50ft front rack lunge 185# + 6 sandbag OS + 10 DL 405# + 6 sandbag OS + 50ft front rack lunge\n\nWOD 2 — Wall Ball Ladder: 4 rounds row+30# + 3 rounds bike+20# + 2 rounds run+14#"},
+{id:410,src:"noah",name:"W4/D6 — Triple EMOM",type:"EMOM",time:"45 min",rx:"95 lb HPS, 53 lb KB",score:"Rounds",yr:"",desc:"EMOM 10: Odd — 10-20 GHD / Even — 10 pistols\nEMOM 10: Odd — 6-10 bar muscle ups / Even — 6-10 hang power snatch 95# unbroken\nEMOM 10: Odd — 12 TTB/CTB alternating / Even — 4-8 two arm KB snatch 53#"},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// APP STATE & UTILITIES
+// ═══════════════════════════════════════════════════════════════
+const SRC_LABELS={girls:"Benchmark Girls",hero:"Hero WODs",open:"CrossFit Open",jb:"Josh Bridges",noah:"Road to the Games"};
+const SRC_ORDER=["girls","hero","open","jb","noah"];
+function load(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let done=new Set(load('wod_done',[]));
+let notes=load('wod_notes',{});
+let openCards=new Set();
+let curModal=null;
+
+function timeBucket(t){
+  if(/until|failure/i.test(t))return"long";
+  const n=parseInt(t.replace(/[^0-9]/g,''))||0;
+  return n<10?"short":n<=20?"medium":"long";
+}
+function typeBadge(t){
+  if(t.includes('AMRAP'))return'b-amrap';
+  if(t.includes('For Time')||t.includes('For Score'))return'b-fortime';
+  if(t.includes('EMOM'))return'b-emom';
+  if(t.includes('Strength'))return'b-strength';
+  return'b-other';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOAD TODAY'S WOD from wod.json
+// ═══════════════════════════════════════════════════════════════
+async function loadTodayWOD(){
+  const dateEl=document.getElementById('today-date');
+  const loadEl=document.getElementById('today-loading');
+  const contentEl=document.getElementById('today-content');
+
+  try{
+    // Add cache-busting so browser always gets fresh version
+    const resp=await fetch('wod.json?t='+Date.now());
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+
+    dateEl.textContent=data.day||data.date||'';
+    document.getElementById('today-title').textContent=data.wod.title||'CrossFit WOD';
+    document.getElementById('today-desc').textContent=data.wod.description||'';
+
+    const meta=document.getElementById('today-meta');
+    if(data.wod.type){
+      meta.innerHTML=`<span class="today-tag">${data.wod.type}</span>`;
+    }
+
+    const srcEl=document.getElementById('today-src');
+    const sourceMap={
+      'crossfit.com':'Source: crossfit.com',
+      'wodwell.com':'Source: wodwell.com',
+      'rotation':'Classic WOD rotation (auto-scrape updates this daily)'
+    };
+    srcEl.textContent=sourceMap[data.wod.source]||('Source: '+data.wod.source);
+    if(data.wod.url){
+      srcEl.innerHTML=`<a href="${data.wod.url}" target="_blank" rel="noopener" style="color:var(--text3);text-decoration:none">${srcEl.textContent} ↗</a>`;
+    }
+
+    loadEl.style.display='none';
+    contentEl.style.display='block';
+  }catch(e){
+    loadEl.style.display='none';
+    contentEl.style.display='block';
+    document.getElementById('today-title').textContent='WOD of the Day';
+    document.getElementById('today-desc').textContent='Today\'s WOD will appear here once the site is deployed on GitHub Pages.';
+    document.getElementById('today-src').textContent='Deploy to GitHub Pages to enable auto-daily updates';
+    dateEl.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const sf=document.getElementById('src').value;
+  const yf=document.getElementById('yr').value;
+  const tf=document.getElementById('type').value;
+  const timef=document.getElementById('timef').value;
+  const df=document.getElementById('donef').value;
+
+  const filtered=WODS.filter(w=>{
+    if(sf&&w.src!==sf)return false;
+    if(yf&&w.yr!==yf)return false;
+    if(tf&&!w.type.includes(tf))return false;
+    if(timef&&timeBucket(w.time)!==timef)return false;
+    if(df==='done'&&!done.has(w.id))return false;
+    if(df==='todo'&&done.has(w.id))return false;
+    if(df==='noted'&&!notes[w.id])return false;
+    if(q){const hay=(w.name+' '+w.desc+' '+w.rx+' '+w.type+' '+w.src+' '+w.yr).toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  });
+
+  document.getElementById('s-showing').textContent=filtered.length;
+  document.getElementById('s-done').textContent=done.size;
+  document.getElementById('s-total').textContent=WODS.length;
+  document.getElementById('s-girls').textContent=WODS.filter(w=>w.src==='girls').length;
+  document.getElementById('s-hero').textContent=WODS.filter(w=>w.src==='hero').length;
+  document.getElementById('s-open').textContent=WODS.filter(w=>w.src==='open').length;
+  document.getElementById('s-jb').textContent=WODS.filter(w=>w.src==='jb').length;
+  document.getElementById('subline').textContent=`${WODS.length} workouts — Benchmark Girls · Hero WODs · CrossFit Open 2015–2025 · Josh Bridges · Noah Ohlsen`;
+
+  const groups={};SRC_ORDER.forEach(s=>groups[s]=[]);
+  filtered.forEach(w=>groups[w.src].push(w));
+
+  let html='';
+  SRC_ORDER.forEach(src=>{
+    const wods=groups[src];if(!wods.length)return;
+    html+=`<div class="section-header"><span class="section-title">${SRC_LABELS[src]}</span><span class="section-count">${wods.length}</span></div><div class="grid">`;
+    wods.forEach(w=>{
+      const isDone=done.has(w.id);const hasNote=!!notes[w.id];const isOpen=openCards.has(w.id);
+      const yrTag=w.yr?`<span class="badge b-open">${w.yr}</span>`:'';
+      html+=`<div class="card${isDone?' done':''}" onclick="openModal(${w.id})">
+        <div class="card-top">
+          <div class="card-name">${w.name}</div>
+          <div class="badges"><span class="badge b-${w.src}">${SRC_LABELS[w.src].split(' ')[0]}</span>${yrTag}<span class="badge ${typeBadge(w.type)}">${w.type}</span></div>
+        </div>
+        <div class="card-desc${isOpen?' open':''}" id="d${w.id}">${w.desc.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+        <div class="card-meta"><span>${w.time}</span><span class="meta-rx">${w.rx}</span><span>Score: ${w.score}</span></div>
+        ${hasNote?`<div class="note-preview">${(notes[w.id]||'').substring(0,55)}${notes[w.id]&&notes[w.id].length>55?'…':''}</div>`:''}
+        <div class="card-actions" onclick="event.stopPropagation()">
+          <button class="btn-sm" onclick="toggleDesc(${w.id},this)">${isOpen?'Less':'More'}</button>
+          <button class="btn-sm btn-done${isDone?' active':''}" onclick="toggleDone(${w.id})">${isDone?'Done ✓':'Mark done'}</button>
+          <button class="btn-sm" onclick="openModal(${w.id})">${hasNote?'Edit note':'Add note'}</button>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  if(!html)html='<div class="empty"><div class="empty-icon">🔍</div>No workouts match.<br><span style="font-size:13px;color:var(--text3)">Try adjusting search or filters.</span></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function toggleDesc(id,btn){
+  const el=document.getElementById('d'+id);
+  const isOpen=el.classList.toggle('open');
+  btn.textContent=isOpen?'Less':'More';
+  if(isOpen)openCards.add(id);else openCards.delete(id);
+}
+function toggleDone(id){
+  if(done.has(id))done.delete(id);else done.add(id);
+  save('wod_done',[...done]);render();
+}
+function clearFilters(){
+  ['search','src','yr','type','timef','donef'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.value=id==='search'?'':el.options[0].value;
+  });
+  render();
+}
+function randomWOD(){clearFilters();const idx=Math.floor(Math.random()*WODS.length);openModal(WODS[idx].id);}
+
+function openModal(id){
+  const w=WODS.find(x=>x.id===id);if(!w)return;curModal=id;
+  document.getElementById('m-src').textContent=SRC_LABELS[w.src]+(w.yr?' · '+w.yr+' Open':'');
+  document.getElementById('m-name').textContent=w.name;
+  document.getElementById('m-badges').innerHTML=`<span class="badge b-${w.src}">${SRC_LABELS[w.src]}</span>${w.yr?`<span class="badge b-open">${w.yr}</span>`:''}<span class="badge ${typeBadge(w.type)}">${w.type}</span>`;
+  document.getElementById('m-desc').textContent=w.desc;
+  document.getElementById('m-rows').innerHTML=`
+    <div class="modal-row"><span class="modal-key">Duration</span><span class="modal-val">${w.time}</span></div>
+    <div class="modal-row"><span class="modal-key">Rx weights</span><span class="modal-val gold">${w.rx}</span></div>
+    <div class="modal-row"><span class="modal-key">Score</span><span class="modal-val">${w.score}</span></div>`;
+  document.getElementById('m-note').value=notes[id]||'';
+  document.getElementById('m-done-btn').textContent=done.has(id)?'Unmark done':'Mark as done';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e){if(e.target===document.getElementById('modal'))closeModalBtn();}
+function closeModalBtn(){document.getElementById('modal').classList.remove('open');curModal=null;}
+function modalToggleDone(){
+  if(!curModal)return;
+  if(done.has(curModal))done.delete(curModal);else done.add(curModal);
+  save('wod_done',[...done]);
+  document.getElementById('m-done-btn').textContent=done.has(curModal)?'Unmark done':'Mark as done';
+  render();
+}
+function modalSaveNote(){
+  if(!curModal)return;
+  const val=document.getElementById('m-note').value.trim();
+  if(val)notes[curModal]=val;else delete notes[curModal];
+  save('wod_notes',notes);render();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalBtn();});
+
+// ── INIT ──────────────────────────────────────────────────────
+loadTodayWOD();
+render();
+</script>
+</body>
+</html>
