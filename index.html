@@ -425,10 +425,13 @@ body {
 .card-accent {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 3px;
+  width: 7px;
+}
+.card:hover .card-accent {
+  box-shadow: 2px 0 12px -2px currentColor;
 }
 
-.card-body { padding: 14px 14px 10px 17px; }
+.card-body { padding: 14px 14px 10px 22px; }
 
 .card-top {
   display: flex;
@@ -543,6 +546,35 @@ body {
 .btn-done-sm:hover { color: #66bb6a; border-color: #66bb6a; background: rgba(102,187,106,.1); }
 .btn-done-sm.active { color: #66bb6a; border-color: #66bb6a; background: rgba(102,187,106,.1); }
 .btn-note-sm:hover { color: var(--gold); border-color: var(--gold); background: rgba(245,166,35,.1); }
+
+/* ── MOVEMENT CHIPS ─────────────────────────── */
+.card-moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 9px;
+}
+.move-chip {
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: .02em;
+}
+
+/* ── SEARCH HIGHLIGHT ───────────────────────── */
+mark {
+  background: rgba(255, 165, 0, .3);
+  color: var(--text);
+  border-radius: 2px;
+  padding: 0 1px;
+  font-style: normal;
+}
 
 /* ── EMPTY STATE ────────────────────────────── */
 .empty {
@@ -1254,6 +1286,54 @@ function typeClass(t){
 }
 
 // ═══════════════════════════════════════════
+// MOVEMENT DETECTION + SEARCH HIGHLIGHT
+// ═══════════════════════════════════════════
+const MOVE_LIST = [
+  ['Run',         /\b(run(s|ning)?|\d+m run|mile run)\b/i],
+  ['Row',         /\b(row(ing)?|\d+m row|cal row)\b/i],
+  ['Bike',        /\b(assault bike|cal bike|bike erg)\b/i],
+  ['Ski Erg',     /\bski erg\b/i],
+  ['Pull-Ups',    /\bpull.?ups?\b/i],
+  ['CTB',         /\b(chest.to.bar|CTB)\b/i],
+  ['Muscle-Ups',  /\bmuscle.?ups?\b/i],
+  ['HSPU',        /\b(handstand push.?ups?|HSPU)\b/i],
+  ['HS Walk',     /\bhandstand walk\b/i],
+  ['Rope Climb',  /\brope climbs?\b/i],
+  ['Ring Dips',   /\bring dips?\b/i],
+  ['TTB',         /\b(toes.to.bar|TTB)\b/i],
+  ['Pistols',     /\bpistols?\b/i],
+  ['Thrusters',   /\bthrusters?\b/i],
+  ['Clean',       /\b(power clean|squat clean|hang clean|c&j|clean &)\b/i],
+  ['Snatch',      /\bsnatches?\b/i],
+  ['Deadlift',    /\bdeadlifts?\b/i],
+  ['Back Squat',  /\bback squat\b/i],
+  ['OHS',         /\b(overhead squat|OHS)\b/i],
+  ['KB Swings',   /\b(kb swings?|kettlebell swings?)\b/i],
+  ['Burpees',     /\bburpees?\b/i],
+  ['Box Jumps',   /\bbox jumps?\b/i],
+  ['Wall Ball',   /\bwall ball\b/i],
+  ['D.U.',        /\bdouble unders?\b/i],
+  ['Push-Ups',    /\bpush.?ups?\b/i],
+  ['Sit-Ups',     /\bsit.?ups?\b/i],
+];
+function getMoves(desc) {
+  const found = [];
+  for (const [label, re] of MOVE_LIST) {
+    if (re.test(desc)) { found.push(label); if (found.length >= 5) break; }
+  }
+  return found;
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function highlight(text, q) {
+  const safe = escHtml(text);
+  if (!q || q.length < 2) return safe;
+  const qEsc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return safe.replace(new RegExp(`(${qEsc})`, 'gi'), '<mark>$1</mark>');
+}
+
+// ═══════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════
 function render() {
@@ -1320,18 +1400,23 @@ function render() {
       const isOpen = openCards.has(w.id);
       const color = cfg.color;
       const yrTag = w.yr ? `<span class="tag" style="background:rgba(157,111,255,.15);color:#9d6fff">${w.yr}</span>` : '';
+      const moves = getMoves(w.desc);
+      const movesHtml = moves.length
+        ? `<div class="card-moves">${moves.map(m=>`<span class="move-chip">${m}</span>`).join('')}</div>`
+        : '';
 
       html += `<div class="card${isDone?' done':''}" onclick="openModal(${w.id})">
         <div class="card-accent" style="background:${color}"></div>
         <div class="card-body">
           <div class="card-top">
-            <div class="card-name${isDone?' done-name':''}">${w.name}</div>
+            <div class="card-name${isDone?' done-name':''}">${highlight(w.name, q)}</div>
             <div class="card-tags">
               ${yrTag}
               <span class="tag ${typeClass(w.type)}">${w.type}</span>
             </div>
           </div>
-          <div class="card-desc${isOpen?' open':''}" id="d${w.id}">${w.desc.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+          ${movesHtml}
+          <div class="card-desc${isOpen?' open':''}" id="d${w.id}">${highlight(w.desc, q)}</div>
           <div class="card-meta">
             <div class="meta-item">
               <span class="meta-label">Time</span>&nbsp;
