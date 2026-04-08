@@ -1,0 +1,39 @@
+name: Daily WOD Scraper
+
+on:
+  schedule:
+    # Runs at 6:00 AM UTC every day (adjust timezone as needed)
+    # 6 AM UTC = 2 AM EST / 11 PM PST
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    # Also allows manual trigger from GitHub Actions tab
+
+jobs:
+  scrape-wod:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  # needed to commit wod.json back to repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run WOD scraper
+        run: python scraper.py
+
+      - name: Commit and push wod.json
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "WOD Bot"
+          git add wod.json
+          # Only commit if wod.json actually changed
+          git diff --staged --quiet || git commit -m "🏋️ Daily WOD update - $(date +'%Y-%m-%d')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
